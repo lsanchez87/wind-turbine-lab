@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Wind Turbine Lab</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #2c7fb8;
+        }
+        .lab-intro {
+            margin-bottom: 20px;
+        }
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #eaf5ff;
+            border-radius: 8px;
+        }
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .simulation-area {
+            position: relative;
+            height: 300px;
+            background-color: #e6f7ff;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .turbine {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 200px;
+            background-color: #666;
+        }
+        .blades-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+        }
+        .blade {
+            position: absolute;
+            width: 80px;
+            height: 20px;
+            background-color: #0066cc;
+            top: 50%;
+            left: 50%;
+            transform-origin: center left;
+            border-radius: 0 50% 50% 0;
+        }
+        .wind {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 20px,
+                rgba(255, 255, 255, 0.2) 20px,
+                rgba(255, 255, 255, 0.2) 40px
+            );
+            background-size: 200% 100%;
+            animation-name: wind-animation;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        @keyframes wind-animation {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: -200px 0;
+            }
+        }
+        .data-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .data-display {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .chart-container {
+            height: 300px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .instructions {
+            background-color: #fffde7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffd600;
+        }
+        .task-section {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4caf50;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Virtual Wind Turbine Lab</h1>
+        
+        <div class="lab-intro">
+            <p>Welcome to the Virtual Wind Turbine Lab! In this simulation, you will explore how different factors affect the power output of a wind turbine. By changing variables like blade number, blade length, wind speed, and blade angle, you'll gather data and draw conclusions about optimal wind turbine design.</p>
+        </div>
+
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Adjust the turbine design parameters (number of blades, blade length, blade angle)</li>
+                <li>Set the wind speed</li>
+                <li>Click "Run Test" to see how your turbine performs</li>
+                <li>Record your data in the data table</li>
+                <li>Try different combinations to find the optimal design</li>
+            </ol>
+        </div>
+
+        <div class="control-panel">
+            <div class="control-group">
+                <h3>Turbine Design</h3>
+                <label for="blade-number">Number of Blades:</label>
+                <select id="blade-number">
+                    <option value="2">2 Blades</option>
+                    <option value="3" selected>3 Blades</option>
+                    <option value="4">4 Blades</option>
+                    <option value="5">5 Blades</option>
+                    <option value="6">6 Blades</option>
+                </select>
+                
+                <label for="blade-length">Blade Length (cm):</label>
+                <input type="range" id="blade-length" min="40" max="100" value="80" step="10">
+                <span id="blade-length-value">80 cm</span>
+                
+                <label for="blade-angle">Blade Angle (degrees):</label>
+                <input type="range" id="blade-angle" min="0" max="45" value="15" step="5">
+                <span id="blade-angle-value">15°</span>
+            </div>
+            
+            <div class="control-group">
+                <h3>Wind Conditions</h3>
+                <label for="wind-speed">Wind Speed (m/s):</label>
+                <input type="range" id="wind-speed" min="1" max="15" value="5" step="1">
+                <span id="wind-speed-value">5 m/s</span>
+                
+                <div style="margin-top: 20px;">
+                    <button id="run-test">Run Test</button>
+                    <button id="reset">Reset</button>
+                    <button id="add-to-table">Record Data</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-area">
+            <div class="wind"></div>
+            <div class="turbine">
+                <div class="blades-container" id="blades-container">
+                    <!-- Blades will be added here via JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-panel">
+            <div class="data-display">
+                <h3>Current Test Results</h3>
+                <p>Power Output: <span id="power-output">0.00</span> Watts</p>
+                <p>Rotation Speed: <span id="rotation-speed">0.00</span> RPM</p>
+                <p>Efficiency: <span id="efficiency">0.00</span>%</p>
+            </div>
+            
+            <div class="data-display">
+                <h3>Data Table</h3>
+                <button id="download-data">Download Data</button>
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <th>Test #</th>
+                            <th>Blades</th>
+                            <th>Length (cm)</th>
+                            <th>Angle (°)</th>
+                            <th>Wind (m/s)</th>
+                            <th>Power (W)</th>
+                            <th>RPM</th>
+                            <th>Efficiency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3>Power Output Comparison</h3>
+            <div id="chart"></div>
+        </div>
+
+        <div class="task-section">
+            <h2>Lab Tasks</h2>
+            <ol>
+                <li>
+                    <h4>Investigation 1: Effect of Number of Blades</h4>
+                    <p>Test how the number of blades affects power output while keeping other variables constant. Record at least 5 tests.</p>
+                </li>
+                <li>
+                    <h4>Investigation 2: Effect of Blade Length</h4>
+                    <p>Test how blade length affects power output while keeping other variables constant. Record at least 5 tests.</p>
+                </li>
+                <li>
+                    <h4>Investigation 3: Effect of Wind Speed</h4>
+                    <p>Test how wind speed affects power output while keeping other variables constant. Record at least 5 tests.</p>
+                </li>
+                <li>
+                    <h4>Investigation 4: Finding the Optimal Design</h4>
+                    <p>Based on your data, design what you think will be the most efficient turbine configuration. Test your design and record the results.</p>
+                </li>
+                <li>
+                    <h4>Lab Report</h4>
+                    <p>Create a lab report that includes:</p>
+                    <ul>
+                        <li>Your hypothesis for each investigation</li>
+                        <li>Your data tables</li>
+                        <li>Graphs of your results</li>
+                        <li>Analysis of the optimal turbine design</li>
+                        <li>Conclusion: What did you learn about wind turbine design? How does this relate to real-world wind farms?</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.1.9/Recharts.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const bladeNumberSelect = document.getElementById('blade-number');
+            const bladeLengthInput = document.getElementById('blade-length');
+            const bladeLengthValue = document.getElementById('blade-length-value');
+            const bladeAngleInput = document.getElementById('blade-angle');
+            const bladeAngleValue = document.getElementById('blade-angle-value');
+            const windSpeedInput = document.getElementById('wind-speed');
+            const windSpeedValue = document.getElementById('wind-speed-value');
+            const runTestButton = document.getElementById('run-test');
+            const resetButton = document.getElementById('reset');
+            const addToTableButton = document.getElementById('add-to-table');
+            const downloadDataButton = document.getElementById('download-data');
+            const bladesContainer = document.getElementById('blades-container');
+            const powerOutputDisplay = document.getElementById('power-output');
+            const rotationSpeedDisplay = document.getElementById('rotation-speed');
+            const efficiencyDisplay = document.getElementById('efficiency');
+            const dataTable = document.getElementById('data-table').getElementsByTagName('tbody')[0];
+            const windAnimation = document.querySelector('.wind');
+            
+            // State variables
+            let testCount = 0;
+            let isRunning = false;
+            let rotationInterval;
+            let currentRotation = 0;
+            let currentPower = 0;
+            let currentRPM = 0;
+            let currentEfficiency = 0;
+            let testData = [];
+            
+            // Initialize the display
+            updateBladesDisplay();
+            
+            // Event listeners for controls
+            bladeNumberSelect.addEventListener('change', updateBladesDisplay);
+            bladeLengthInput.addEventListener('input', updateBladeLengthDisplay);
+            bladeAngleInput.addEventListener('input', updateBladeAngleDisplay);
+            windSpeedInput.addEventListener('input', updateWindSpeedDisplay);
+            runTestButton.addEventListener('click', runTest);
+            resetButton.addEventListener('click', resetSimulation);
+            addToTableButton.addEventListener('click', addDataToTable);
+            downloadDataButton.addEventListener('click', downloadData);
+            
+            // Function to update blade length display
+            function updateBladeLengthDisplay() {
+                bladeLengthValue.textContent = bladeLengthInput.value + ' cm';
+                updateBladesDisplay();
+            }
+            
+            // Function to update blade angle display
+            function updateBladeAngleDisplay() {
+                bladeAngleValue.textContent = bladeAngleInput.value + '°';
+                updateBladesDisplay();
+            }
+            
+            // Function to update wind speed display
+            function updateWindSpeedDisplay() {
+                windSpeedValue.textContent = windSpeedInput.value + ' m/s';
+                
+                // Update wind animation speed
+                const windSpeed = parseInt(windSpeedInput.value);
+                windAnimation.style.animationDuration = (16 / windSpeed) + 's';
+            }
+            
+            // Function to update blades display
+            function updateBladesDisplay() {
+                // Clear existing blades
+                bladesContainer.innerHTML = '';
+                
+                // Get current blade settings
+                const bladeCount = parseInt(bladeNumberSelect.value);
+                const bladeLength = parseInt(bladeLengthInput.value);
+                const bladeAngle = parseInt(bladeAngleInput.value);
+                
+                // Create new blades
+                for (let i = 0; i < bladeCount; i++) {
+                    const angle = (i * (360 / bladeCount));
+                    const blade = document.createElement('div');
+                    blade.className = 'blade';
+                    blade.style.transform = `rotate(${angle}deg) skew(${bladeAngle}deg)`;
+                    blade.style.width = (bladeLength * 0.8) + 'px';
+                    bladesContainer.appendChild(blade);
+                }
+            }
+            
+            // Function to run the turbine test
+            function runTest() {
+                if (isRunning) return;
+                
+                isRunning = true;
+                runTestButton.disabled = true;
+                addToTableButton.disabled = true;
+                
+                // Get current settings
+                const bladeCount = parseInt(bladeNumberSelect.value);
+                const bladeLength = parseInt(bladeLengthInput.value);
+                const bladeAngle = parseInt(bladeAngleInput.value);
+                const windSpeed = parseInt(windSpeedInput.value);
+                
+                // Calculate rotation speed based on settings
+                // This is a simplified model - real turbines have more complex physics
+                let baseRPM = windSpeed * 5;
+                
+                // Blade count effect (3 is optimal in real world)
+                let bladeCountFactor = 1;
+                if (bladeCount === 3) bladeCountFactor = 1.1;
+                else if (bladeCount < 3) bladeCountFactor = 0.8 + (bladeCount * 0.1);
+                else bladeCountFactor = 1 - ((bladeCount - 3) * 0.1);
+                
+                // Blade length effect (longer blades = more power but slower rotation)
+                const bladeLengthFactor = bladeLength / 80;
+                
+                // Blade angle effect (15-20 degrees is optimal)
+                let bladeAngleFactor = 1;
+                if (bladeAngle >= 15 && bladeAngle <= 20) bladeAngleFactor = 1.2;
+                else if (bladeAngle < 15) bladeAngleFactor = 0.7 + (bladeAngle * 0.03);
+                else bladeAngleFactor = 1.2 - ((bladeAngle - 20) * 0.02);
+                
+                // Calculate final RPM and add some randomness to simulate real-world conditions
+                currentRPM = baseRPM * bladeCountFactor * bladeAngleFactor * (1 / Math.sqrt(bladeLengthFactor)) * (0.9 + Math.random() * 0.2);
+                
+                // Calculate power output (using a simplified version of P = 0.5 * ρ * A * Cp * v³)
+                // where ρ is air density, A is swept area, Cp is coefficient of performance, v is wind speed
+                const sweptArea = Math.PI * Math.pow(bladeLength / 100, 2); // Convert cm to m
+                const coefficientOfPerformance = bladeCountFactor * bladeAngleFactor * 0.4; // Betz limit is 0.593
+                currentPower = 0.5 * 1.225 * sweptArea * coefficientOfPerformance * Math.pow(windSpeed, 3);
+                
+                // Calculate efficiency (as percentage of theoretical maximum)
+                const theoreticalMax = 0.5 * 1.225 * sweptArea * 0.593 * Math.pow(windSpeed, 3);
+                currentEfficiency = (currentPower / theoreticalMax) * 100;
+                
+                // Update displays
+                powerOutputDisplay.textContent = currentPower.toFixed(2);
+                rotationSpeedDisplay.textContent = currentRPM.toFixed(2);
+                efficiencyDisplay.textContent = currentEfficiency.toFixed(2);
+                
+                // Animate turbine rotation
+                const rotationSpeed = currentRPM / 60; // Convert to rotations per second
+                const rotationTime = 1000 / rotationSpeed; // Time for one rotation in ms
+                
+                // Set the animation duration
+                bladesContainer.style.transition = 'transform 1s linear';
+                
+                rotationInterval = setInterval(() => {
+                    currentRotation += 30;
+                    bladesContainer.style.transform = `translateX(-50%) rotate(${currentRotation}deg)`;
+                }, 50);
+                
+                // End the test after 3 seconds
+                setTimeout(() => {
+                    clearInterval(rotationInterval);
+                    isRunning = false;
+                    runTestButton.disabled = false;
+                    addToTableButton.disabled = false;
+                }, 3000);
+            }
+            
+            // Function to reset the simulation
+            function resetSimulation() {
+                clearInterval(rotationInterval);
+                isRunning = false;
+                currentRotation = 0;
+                currentPower = 0;
+                currentRPM = 0;
+                currentEfficiency = 0;
+                
+                // Reset displays
+                bladesContainer.style.transform = 'translateX(-50%) rotate(0deg)';
+                powerOutputDisplay.textContent = '0.00';
+                rotationSpeedDisplay.textContent = '0.00';
+                efficiencyDisplay.textContent = '0.00';
+                
+                // Re-enable buttons
+                runTestButton.disabled = false;
+                addToTableButton.disabled = false;
+            }
+            
+            // Function to add data to the table
+            function addDataToTable() {
+                if (isRunning || currentPower === 0) return;
+                
+                testCount++;
+                
+                // Get current settings
+                const bladeCount = parseInt(bladeNumberSelect.value);
+                const bladeLength = parseInt(bladeLengthInput.value);
+                const bladeAngle = parseInt(bladeAngleInput.value);
+                const windSpeed = parseInt(windSpeedInput.value);
+                
+                // Create new data row
+                const newRow = dataTable.insertRow();
+                newRow.insertCell(0).textContent = testCount;
+                newRow.insertCell(1).textContent = bladeCount;
+                newRow.insertCell(2).textContent = bladeLength;
+                newRow.insertCell(3).textContent = bladeAngle;
+                newRow.insertCell(4).textContent = windSpeed;
+                newRow.insertCell(5).textContent = currentPower.toFixed(2);
+                newRow.insertCell(6).textContent = currentRPM.toFixed(2);
+                newRow.insertCell(7).textContent = currentEfficiency.toFixed(2);
+                
+                // Add to data array for potential download
+                testData.push({
+                    test: testCount,
+                    blades: bladeCount,
+                    length: bladeLength,
+                    angle: bladeAngle,
+                    wind: windSpeed,
+                    power: currentPower.toFixed(2),
+                    rpm: currentRPM.toFixed(2),
+                    efficiency: currentEfficiency.toFixed(2)
+                });
+                
+                // Update the chart
+                updateChart();
+            }
+            
+            // Function to download data as CSV
+            function downloadData() {
+                if (testData.length === 0) return;
+                
+                // Create CSV content
+                let csvContent = "Test #,Blades,Length (cm),Angle (°),Wind (m/s),Power (W),RPM,Efficiency (%)\n";
+                
+                testData.forEach(row => {
+                    csvContent += `${row.test},${row.blades},${row.length},${row.angle},${row.wind},${row.power},${row.rpm},${row.efficiency}\n`;
+                });
+                
+                // Create download link
+                const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "wind_turbine_data.csv");
+                document.body.appendChild(link);
+                
+                // Trigger download
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Function to update the chart with current data
+            function updateChart() {
+                // Since we don't have direct access to Recharts in this environment,
+                // this function would normally create a visualization of the data
+                // For simplicity, we'll just create a basic representation
+                
+                const chartDiv = document.getElementById('chart');
+                chartDiv.innerHTML = '';
+                
+                // Create a simple bar chart representation
+                const chartContainer = document.createElement('div');
+                chartContainer.style.display = 'flex';
+                chartContainer.style.alignItems = 'flex-end';
+                chartContainer.style.height = '240px';
+                chartContainer.style.padding = '10px';
+                
+                testData.forEach(data => {
+                    const bar = document.createElement('div');
+                    const height = Math.min((data.power / 10) * 240, 240);
+                    bar.style.height = height + 'px';
+                    bar.style.width = '30px';
+                    bar.style.backgroundColor = '#0066cc';
+                    bar.style.margin = '0 5px';
+                    bar.style.position = 'relative';
+                    
+                    const label = document.createElement('div');
+                    label.textContent = `Test ${data.test}`;
+                    label.style.position = 'absolute';
+                    label.style.bottom = '-25px';
+                    label.style.left = '50%';
+                    label.style.transform = 'translateX(-50%)';
+                    label.style.fontSize = '12px';
+                    
+                    const value = document.createElement('div');
+                    value.textContent = data.power + 'W';
+                    value.style.position = 'absolute';
+                    value.style.top = '-20px';
+                    value.style.left = '50%';
+                    value.style.transform = 'translateX(-50%)';
+                    value.style.fontSize = '12px';
+                    
+                    bar.appendChild(label);
+                    bar.appendChild(value);
+                    chartContainer.appendChild(bar);
+                });
+                
+                // Add a simple horizontal axis
+                const axis = document.createElement('div');
+                axis.style.width = '100%';
+                axis.style.height = '1px';
+                axis.style.backgroundColor = '#666';
+                axis.style.marginTop = '25px';
+                
+                chartDiv.appendChild(chartContainer);
+                chartDiv.appendChild(axis);
+            }
+        });
+    </script>
+</body>
+</html>
